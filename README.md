@@ -90,6 +90,6 @@ The Task 6 feature is developed using a separate feature branch:
 
 The feature will be tested locally, committed, pushed to GitHub, and merged into the `main` branch through a Pull Request.
 
-### Task 6 Status
+## Collaboration Demo
 
-MVP dashboard and role-based workflow implemented and tested locally.
+Task 6 Git collaboration and conflict resolution were demonstrated.
