@@ -92,4 +92,8 @@ The feature will be tested locally, committed, pushed to GitHub, and merged into
 
 ## Collaboration Demo
 
-Task 6 Git collaboration and conflict resolution were demonstrated.
+MVP dashboard and role-based workflow implemented and tested locally.
+
+## Collaboration Demo
+
+Task 6 collaboration changes were developed using Git feature branches.
