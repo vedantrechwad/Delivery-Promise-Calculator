@@ -1,6 +1,8 @@
 package com.deliverypromise.calculator.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 
 @Entity
@@ -11,15 +13,19 @@ public class Delivery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Customer name is required")
     @Column(nullable = false)
     private String customerName;
 
+    @NotBlank(message = "Delivery address is required")
     @Column(nullable = false)
     private String deliveryAddress;
 
+    @NotBlank(message = "Product name is required")
     @Column(nullable = false)
     private String productName;
 
+    @Min(value = 1, message = "Delivery days must be at least 1")
     @Column(nullable = false)
     private int deliveryDays;
 
