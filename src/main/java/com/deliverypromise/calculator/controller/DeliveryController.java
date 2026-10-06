@@ -2,6 +2,7 @@ package com.deliverypromise.calculator.controller;
 
 import com.deliverypromise.calculator.model.Delivery;
 import com.deliverypromise.calculator.service.DeliveryService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class DeliveryController {
     }
 
     @PostMapping("/deliveries")
-    public String createDelivery(@ModelAttribute Delivery delivery) {
+    public String createDelivery(@Valid @ModelAttribute Delivery delivery) {
         deliveryService.createDelivery(delivery);
         return "redirect:/deliveries";
     }
