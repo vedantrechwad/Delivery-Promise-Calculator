@@ -93,3 +93,7 @@ The feature will be tested locally, committed, pushed to GitHub, and merged into
 ### Task 6 Status
 
 MVP dashboard and role-based workflow implemented and tested locally.
+
+## Collaboration Demo
+
+Task 6 collaboration changes were developed using Git feature branches.
