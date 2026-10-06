@@ -5,50 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery Management</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; }
-        input, button, select { padding: 8px; margin: 4px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background: #f2f2f2; }
-        .cards { display: flex; gap: 20px; margin: 20px 0; }
-        .card { border: 1px solid #ccc; padding: 15px 25px; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #111;
+        }
+
+        h1, h2 {
+            margin-bottom: 12px;
+        }
+
+        a {
+            color: #551a8b;
+        }
+
+        .role {
+            margin: 10px 0 20px;
+        }
+
+        .summary {
+            display: flex;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            padding: 12px 22px;
+            min-width: 75px;
+        }
+
+        form.inline {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input, select, button {
+            padding: 6px 8px;
+            font-size: 14px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        .view-only {
+            color: #666;
+        }
+
+        .error {
+            color: #b00020;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
 
 <h1>Delivery Management</h1>
+
 <p><a href="/">← Home</a></p>
 
-<div class="cards">
+<p class="role">
+    Current Role:
+    <strong th:text="${role}">CUSTOMER</strong>
+</p>
+
+<p class="error" th:if="${error != null}" th:text="${error}"></p>
+
+<div class="summary">
     <div class="card">
-        <strong>Total</strong><br>
-        <span th:text="${total}">0</span>
+        <strong>Total</strong>
+        <div th:text="${total}">0</div>
     </div>
     <div class="card">
-        <strong>Pending</strong><br>
-        <span th:text="${pending}">0</span>
+        <strong>Pending</strong>
+        <div th:text="${pending}">0</div>
     </div>
     <div class="card">
-        <strong>Delivered</strong><br>
-        <span th:text="${delivered}">0</span>
+        <strong>Delivered</strong>
+        <div th:text="${delivered}">0</div>
     </div>
 </div>
 
 <h2>Create Delivery</h2>
 
-<form method="post" action="/deliveries">
-    <input type="text" name="customerName" placeholder="Customer Name" required>
-    <input type="text" name="deliveryAddress" placeholder="Delivery Address" required>
-    <input type="text" name="productName" placeholder="Product Name" required>
-    <input type="number" name="deliveryDays" placeholder="Delivery Days" min="1" required>
+<form th:action="@{/deliveries}" th:object="${delivery}" method="post" class="inline">
+    <input type="text" th:field="*{customerName}" placeholder="Customer Name" required>
+    <input type="text" th:field="*{deliveryAddress}" placeholder="Delivery Address" required>
+    <input type="text" th:field="*{productName}" placeholder="Product Name" required>
+    <input type="number" th:field="*{deliveryDays}" placeholder="Delivery Days" min="1" required>
     <button type="submit">Create Delivery</button>
 </form>
 
 <h2>Search</h2>
 
-<form method="get" action="/deliveries">
-    <input type="text" name="keyword" th:value="${keyword}"
-           placeholder="Customer or product">
+<form th:action="@{/deliveries}" method="get" class="inline">
+    <input type="text" name="keyword" th:value="${keyword}" placeholder="Customer or product">
     <button type="submit">Search</button>
     <a href="/deliveries">Clear</a>
 </form>
@@ -65,21 +131,23 @@
         <th>Delivery Days</th>
         <th>Promised Date</th>
         <th>Status</th>
-        <th>Update Status</th>
+        <th th:if="${canUpdateStatus}">Update Status</th>
+        <th th:unless="${canUpdateStatus}">Access</th>
     </tr>
     </thead>
 
     <tbody>
-    <tr th:each="d : ${deliveries}">
-        <td th:text="${d.id}"></td>
-        <td th:text="${d.customerName}"></td>
-        <td th:text="${d.deliveryAddress}"></td>
-        <td th:text="${d.productName}"></td>
-        <td th:text="${d.deliveryDays}"></td>
-        <td th:text="${d.promisedDate}"></td>
-        <td th:text="${d.status}"></td>
-        <td>
-            <form th:action="@{/deliveries/{id}/status(id=${d.id})}" method="post">
+    <tr th:each="delivery : ${deliveries}">
+        <td th:text="${delivery.id}">1</td>
+        <td th:text="${delivery.customerName}">Customer</td>
+        <td th:text="${delivery.deliveryAddress}">Address</td>
+        <td th:text="${delivery.productName}">Product</td>
+        <td th:text="${delivery.deliveryDays}">5</td>
+        <td th:text="${delivery.promisedDate}">2026-10-11</td>
+        <td th:text="${delivery.status}">PENDING</td>
+
+        <td th:if="${canUpdateStatus}">
+            <form th:action="@{'/deliveries/' + ${delivery.id} + '/status'}" method="post">
                 <select name="status">
                     <option value="PENDING">PENDING</option>
                     <option value="PROCESSING">PROCESSING</option>
@@ -90,9 +158,14 @@
                 <button type="submit">Update</button>
             </form>
         </td>
+
+        <td th:unless="${canUpdateStatus}">
+            <span class="view-only">View only</span>
+        </td>
     </tr>
+
     <tr th:if="${#lists.isEmpty(deliveries)}">
-        <td colspan="8">No delivery records found.</td>
+        <td colspan="9">No delivery records found.</td>
     </tr>
     </tbody>
 </table>
