@@ -1,0 +1,60 @@
+DELIVERY PROMISE CALCULATOR
+Problem Definition and Scope
+
+Name: Vedant Rechwad
+Roll No: 23102A0054
+
+Target Users:
+1. Customers
+2. Delivery/Operations Staff
+3. Administrators
+
+Problem:
+Organizations need a simple way to manage delivery records and provide
+an expected delivery date to users. Manual tracking can cause delays,
+inconsistent information and difficulty in monitoring delivery status.
+
+Main Objectives:
+1. Create and manage delivery records.
+2. Calculate an expected delivery date.
+3. Allow users to search and view delivery information.
+4. Provide role-based delivery status management.
+5. Provide a dashboard showing delivery statistics.
+6. Build the application so it can later be automated using DevOps tools.
+
+Main Constraints:
+1. The MVP should remain small and manageable.
+2. The application will use Java and Spring Boot.
+3. Maven will be used for building the application.
+4. SQLite will be used as the initial database.
+5. The application should be deployable using Docker.
+6. Jenkins will be used for CI/CD.
+7. Selenium will be used for automated testing.
+8. Puppet will be used for provisioning.
+
+Success Criteria:
+1. Users can create, view, update and search delivery records.
+2. Delivery promises are calculated correctly.
+3. Role-based status changes work correctly.
+4. Dashboard statistics are displayed correctly.
+5. Automated Selenium tests pass.
+6. The application can be built through Jenkins.
+7. The application can run inside a Docker container.
+8. The application can be provisioned using Puppet.
+
+Approved MVP Scope:
+1. User login
+2. Role-based access
+3. Create delivery record
+4. View delivery records
+5. Update delivery record
+6. Search delivery records
+7. Calculate promised delivery date
+8. Display delivery status
+9. Role-based status update
+10. View delivery details
+11. Dashboard summary
+12. Filter records
+13. Input validation
+14. Error handling
+15. Application health/status endpoint
