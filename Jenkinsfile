@@ -39,27 +39,14 @@ pipeline {
 
         stage('Start Application') {
             steps {
-                powershell '''
-                    $env:JENKINS_NODE_COOKIE = "dontKillMe"
-
-                    $jar = Join-Path $env:DEPLOY_DIR $env:JAR_NAME
-                    $log = Join-Path $env:DEPLOY_DIR "application.log"
-
-                    $existing = Get-CimInstance Win32_Process |
-                        Where-Object {
-                            $_.Name -eq "java.exe" -and
-                            $_.CommandLine -like "*$env:JAR_NAME*"
-                        }
-
-                    foreach ($process in $existing) {
-                        Stop-Process -Id $process.ProcessId -Force
-                    }
-
-                    Start-Process `
-                        -FilePath "java.exe" `
-                        -ArgumentList "-jar `"$jar`"" `
-                        -WorkingDirectory $env:DEPLOY_DIR `
-                        -RedirectStandardOutput $log
+                bat '''
+                    echo Starting Delivery Promise Calculator...
+                    if exist "%DEPLOY_DIR%\\application.log" del /Q "%DEPLOY_DIR%\\application.log"
+                    set "JENKINS_SERVER_COOKIE=dontKillMe"
+                    set "JENKINS_NODE_COOKIE=dontKillMe"
+                    start "Delivery Promise Calculator" /B cmd /c "java -jar \"%DEPLOY_DIR%\\%JAR_NAME%\" > \"%DEPLOY_DIR%\\application.log\" 2>&1"
+                    timeout /t 5 /nobreak >nul
+                    echo Application launch command completed.
                 '''
             }
         }
@@ -67,9 +54,8 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully. Application deployed on port 8765.'
+            echo 'Pipeline completed successfully. Application deployment command completed.'
         }
-
         failure {
             echo 'Pipeline failed. Check the stage logs for details.'
         }
