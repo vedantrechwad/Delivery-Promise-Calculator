@@ -40,11 +40,14 @@ pipeline {
         stage('Start Application') {
             steps {
                 powershell '''
+                    $env:JENKINS_NODE_COOKIE = "dontKillMe"
+
                     $jar = Join-Path $env:DEPLOY_DIR $env:JAR_NAME
+                    $log = Join-Path $env:DEPLOY_DIR "application.log"
 
                     $existing = Get-CimInstance Win32_Process |
                         Where-Object {
-                            $_.Name -eq 'java.exe' -and
+                            $_.Name -eq "java.exe" -and
                             $_.CommandLine -like "*$env:JAR_NAME*"
                         }
 
@@ -55,7 +58,8 @@ pipeline {
                     Start-Process `
                         -FilePath "java.exe" `
                         -ArgumentList "-jar `"$jar`"" `
-                        -WorkingDirectory $env:DEPLOY_DIR
+                        -WorkingDirectory $env:DEPLOY_DIR `
+                        -RedirectStandardOutput $log
                 '''
             }
         }
