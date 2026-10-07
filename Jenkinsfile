@@ -1,13 +1,8 @@
 pipeline {
     agent any
 
-    environment {
-        MAVEN = 'C:\\DevTools\\apache-maven-3.9.16\\bin\\mvn.cmd'
-        DEPLOY_DIR = 'C:\\DeliveryPromise'
-        JAR_NAME = 'delivery-promise-calculator-0.0.1-SNAPSHOT.jar'
-    }
-
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -16,37 +11,39 @@ pipeline {
 
         stage('Build and Test') {
             steps {
+                bat '"C:\\DevTools\\apache-maven-3.9.16\\bin\\mvn.cmd" clean test package'
+            }
+        }
+
+        stage('Docker Check') {
+            steps {
                 bat '''
-                    call "C:\\DevTools\\apache-maven-3.9.16\\bin\\mvn.cmd" clean test package
+                docker --version
+                docker ps
                 '''
             }
         }
 
-        stage('Archive Artifact') {
+        stage('Docker Build') {
             steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                bat 'docker build -t delivery-promise-calculator:1.0 .'
             }
         }
 
-        stage('Deploy') {
+        stage('Docker Deploy') {
             steps {
                 bat '''
-                    if not exist "%DEPLOY_DIR%" mkdir "%DEPLOY_DIR%"
-                    copy /Y "target\\%JAR_NAME%" "%DEPLOY_DIR%\\%JAR_NAME%"
+                docker rm -f delivery-promise-app 2>nul || exit /b 0
+                docker run -d --name delivery-promise-app -p 8766:8765 delivery-promise-calculator:1.0
                 '''
             }
         }
 
-        stage('Start Application') {
+        stage('Verify Deployment') {
             steps {
                 bat '''
-                    echo Starting Delivery Promise Calculator...
-                    set "JENKINS_SERVER_COOKIE=dontKillMe"
-                    set "JENKINS_NODE_COOKIE=dontKillMe"
-                    start "" /B java -jar "%DEPLOY_DIR%\\%JAR_NAME%"
-                    powershell -NoProfile -Command "Start-Sleep -Seconds 5"
-                    echo Application launch command completed.
-                    echo Application should be available at http://localhost:8765
+                docker ps --filter "name=delivery-promise-app"
+                echo Docker deployment completed successfully.
                 '''
             }
         }
@@ -54,10 +51,11 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully. Application deployed on port 8765.'
+            echo 'Pipeline completed successfully. Docker application deployed on port 8766.'
         }
+
         failure {
-            echo 'Pipeline failed. Check the stage logs for details.'
+            echo 'Pipeline failed. Check the stage logs.'
         }
     }
 }
