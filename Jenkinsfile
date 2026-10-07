@@ -41,12 +41,12 @@ pipeline {
             steps {
                 bat '''
                     echo Starting Delivery Promise Calculator...
-                    if exist "%DEPLOY_DIR%\\application.log" del /Q "%DEPLOY_DIR%\\application.log"
                     set "JENKINS_SERVER_COOKIE=dontKillMe"
                     set "JENKINS_NODE_COOKIE=dontKillMe"
-                    start "Delivery Promise Calculator" /B cmd /c "java -jar \"%DEPLOY_DIR%\\%JAR_NAME%\" > \"%DEPLOY_DIR%\\application.log\" 2>&1"
-                    timeout /t 5 /nobreak >nul
+                    start "" /B java -jar "%DEPLOY_DIR%\\%JAR_NAME%"
+                    powershell -NoProfile -Command "Start-Sleep -Seconds 5"
                     echo Application launch command completed.
+                    echo Application should be available at http://localhost:8765
                 '''
             }
         }
@@ -54,7 +54,7 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully. Application deployment command completed.'
+            echo 'Pipeline completed successfully. Application deployed on port 8765.'
         }
         failure {
             echo 'Pipeline failed. Check the stage logs for details.'
