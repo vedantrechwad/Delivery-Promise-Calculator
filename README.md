@@ -97,3 +97,22 @@ MVP dashboard and role-based workflow implemented and tested locally.
 ## Collaboration Demo
 
 Task 6 collaboration changes were developed using Git feature branches.
+
+Task 9 Selenium Files
+
+1. Add the Selenium dependency from selenium-dependency.xml inside <dependencies> in pom.xml.
+2. Put DeliveryPromiseSeleniumTest.java at:
+   src/test/java/com/deliverypromise/calculator/DeliveryPromiseSeleniumTest.java
+
+Important:
+- Keep the Spring Boot application running at http://localhost:8765.
+- The test uses Chrome.
+- Selenium Manager handles ChromeDriver automatically.
+- Run the test from the project root with:
+  mvn -Dtest=DeliveryPromiseSeleniumTest test
+
+The tests verify:
+- Delivery Management page loads
+- Delivery creation works
+- Promised date/status are displayed
+- Search works
