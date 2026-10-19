@@ -50,6 +50,18 @@ public class DeliveryService {
         return deliveryRepository.save(delivery);
     }
 
+    public Delivery cancelDelivery(Long id) {
+        Delivery delivery = deliveryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Delivery not found"));
+
+        if ("DELIVERED".equalsIgnoreCase(delivery.getStatus())) {
+            throw new IllegalStateException("Delivered orders cannot be cancelled");
+        }
+
+        delivery.setStatus("CANCELLED");
+        return deliveryRepository.save(delivery);
+    }
+
     public long getTotalDeliveries() {
         return deliveryRepository.count();
     }

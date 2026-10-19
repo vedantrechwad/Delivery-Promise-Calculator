@@ -135,7 +135,7 @@
         <th>Promised Date</th>
         <th>Status</th>
         <th th:if="${canUpdateStatus}">Update Status</th>
-        <th th:unless="${canUpdateStatus}">Access</th>
+        <th th:unless="${canUpdateStatus}">Action</th>
     </tr>
     </thead>
 
@@ -163,7 +163,13 @@
         </td>
 
         <td th:unless="${canUpdateStatus}">
-            <span class="view-only">View only</span>
+            <form th:if="${delivery.status != 'CANCELLED' and delivery.status != 'DELIVERED'}"
+                  th:action="@{'/deliveries/' + ${delivery.id} + '/cancel'}"
+                  method="post" style="display:inline;">
+                <button type="submit" style="background-color: #d9534f; color: white; border: 1px solid #d43f3a; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Cancel</button>
+            </form>
+            <span th:if="${delivery.status == 'CANCELLED'}" class="view-only" style="color: #888;">Cancelled</span>
+            <span th:if="${delivery.status == 'DELIVERED'}" class="view-only" style="color: #28a745;">Completed</span>
         </td>
     </tr>
 

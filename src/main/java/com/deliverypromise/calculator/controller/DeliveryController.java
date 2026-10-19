@@ -62,6 +62,16 @@ public class DeliveryController {
         return "redirect:/deliveries";
     }
 
+    @PostMapping("/deliveries/{id}/cancel")
+    public String cancelDelivery(@PathVariable Long id) {
+        try {
+            deliveryService.cancelDelivery(id);
+        } catch (IllegalStateException e) {
+            return "redirect:/deliveries?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return "redirect:/deliveries";
+    }
+
     private String getRole(HttpSession session) {
         Object role = session.getAttribute("role");
 
