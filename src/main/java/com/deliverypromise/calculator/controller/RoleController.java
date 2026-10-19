@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RoleController {
 
     @GetMapping("/role")
-    public String setRole(@RequestParam String role, HttpSession session) {
+    public String setRole(
+            @RequestParam String role,
+            @RequestParam(required = false, defaultValue = "/deliveries") String redirect,
+            HttpSession session) {
         String normalizedRole = role.toUpperCase();
 
         if (!normalizedRole.equals("ADMIN")
@@ -19,6 +22,6 @@ public class RoleController {
         }
 
         session.setAttribute("role", normalizedRole);
-        return "redirect:/deliveries";
+        return "redirect:" + (redirect.startsWith("/") ? redirect : "/deliveries");
     }
 }

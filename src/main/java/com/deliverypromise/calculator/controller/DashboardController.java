@@ -15,7 +15,9 @@ public class DashboardController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(jakarta.servlet.http.HttpSession session, Model model) {
+        Object role = session.getAttribute("role");
+        model.addAttribute("role", role == null ? "CUSTOMER" : role.toString());
         model.addAttribute("total", deliveryService.getTotalDeliveries());
         model.addAttribute("pending", deliveryService.getPendingDeliveries());
         model.addAttribute("delivered", deliveryService.getDeliveredDeliveries());

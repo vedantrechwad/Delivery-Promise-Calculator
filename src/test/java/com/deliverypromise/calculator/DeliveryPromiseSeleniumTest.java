@@ -53,7 +53,7 @@ class DeliveryPromiseSeleniumTest {
         driver.findElement(By.cssSelector("button[type='submit']"))
                 .click();
 
-        wait.until(ExpectedConditions.urlContains("/deliveries"));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("table"), customer));
 
         assertTrue(driver.findElement(By.tagName("table"))
                 .getText().contains(customer));
@@ -79,13 +79,14 @@ class DeliveryPromiseSeleniumTest {
         driver.findElement(By.cssSelector("form[action='/deliveries'] button[type='submit']"))
                 .click();
 
-        wait.until(ExpectedConditions.urlContains("/deliveries"));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("table"), customer));
 
         driver.findElement(By.name("keyword")).sendKeys(customer);
         driver.findElement(By.cssSelector("form[action='/deliveries'][method='get'] button"))
                 .click();
 
         wait.until(ExpectedConditions.urlContains("keyword"));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("table"), customer));
 
         assertTrue(driver.findElement(By.tagName("table"))
                 .getText().contains(customer));

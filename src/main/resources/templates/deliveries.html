@@ -79,10 +79,13 @@
 
 <p><a href="/">← Home</a></p>
 
-<p class="role">
-    Current Role:
-    <strong th:text="${role}">CUSTOMER</strong>
-</p>
+<div class="role" style="display: flex; align-items: center; gap: 10px; margin: 10px 0 20px;">
+    <span>Current Role: <strong th:text="${role}">CUSTOMER</strong></span>
+    <span style="color: #666; font-size: 13px;">Switch Role:</span>
+    <a href="/role?role=ADMIN" style="text-decoration: none; padding: 4px 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 12px; color: #222; background: #f0f0f0;">Admin</a>
+    <a href="/role?role=OPERATIONS" style="text-decoration: none; padding: 4px 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 12px; color: #222; background: #f0f0f0;">Operator</a>
+    <a href="/role?role=CUSTOMER" style="text-decoration: none; padding: 4px 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 12px; color: #222; background: #f0f0f0;">Customer</a>
+</div>
 
 <p class="error" th:if="${error != null}" th:text="${error}"></p>
 
