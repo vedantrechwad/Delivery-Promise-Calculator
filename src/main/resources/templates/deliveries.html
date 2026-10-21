@@ -3,181 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Management</title>
+    <title>Delivery Management - PromiseFlow</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 30px;
-            color: #111;
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            align-items: end;
         }
-
-        h1, h2 {
-            margin-bottom: 12px;
-        }
-
-        a {
-            color: #551a8b;
-        }
-
-        .role {
-            margin: 10px 0 20px;
-        }
-
-        .summary {
+        .action-row {
             display: flex;
-            gap: 16px;
-            margin: 20px 0;
-        }
-
-        .card {
-            border: 1px solid #ccc;
-            padding: 12px 22px;
-            min-width: 75px;
-        }
-
-        form.inline {
-            display: flex;
-            gap: 10px;
             align-items: center;
-        }
-
-        input, select, button {
-            padding: 6px 8px;
-            font-size: 14px;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background: #f5f5f5;
-        }
-
-        .view-only {
-            color: #666;
-        }
-
-        .error {
-            color: #b00020;
-            margin: 10px 0;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0 14px;
         }
     </style>
 </head>
 <body>
+    <div th:replace="~{fragments/navbar :: navbar('deliveries')}"></div>
 
-<h1>Delivery Management</h1>
+    <div class="container">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Delivery Management</h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage active shipments, calculate promised arrival dates, and update logistics statuses</p>
+            </div>
 
-<p><a href="/">← Home</a></p>
+            <div style="display: flex; gap: 8px;">
+                <a href="/deliveries/export" class="btn btn-secondary btn-sm" title="Export records to CSV">
+                    <span>📥</span> Export CSV
+                </a>
+            </div>
+        </div>
 
-<div class="role" style="display: flex; align-items: center; gap: 10px; margin: 10px 0 20px;">
-    <span>Current Role: <strong th:text="${role}">CUSTOMER</strong></span>
-    <span style="color: #666; font-size: 13px;">Switch Role:</span>
-    <a href="/role?role=ADMIN" style="text-decoration: none; padding: 4px 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 12px; color: #222; background: #f0f0f0;">Admin</a>
-    <a href="/role?role=OPERATIONS" style="text-decoration: none; padding: 4px 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 12px; color: #222; background: #f0f0f0;">Operator</a>
-    <a href="/role?role=CUSTOMER" style="text-decoration: none; padding: 4px 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 12px; color: #222; background: #f0f0f0;">Customer</a>
-</div>
+        <!-- Flash Messages -->
+        <div th:if="${error != null}" class="alert alert-error">
+            <span>⚠️</span> <span th:text="${error}">An error occurred</span>
+        </div>
+        <div th:if="${success != null}" class="alert alert-success">
+            <span>✓</span> <span th:text="${success}">Action completed successfully</span>
+        </div>
 
-<p class="error" th:if="${error != null}" th:text="${error}"></p>
+        <!-- Summary KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Total Deliveries</span>
+                    <span class="kpi-icon">📦</span>
+                </div>
+                <div class="kpi-value" th:text="${total}">0</div>
+                <div class="kpi-meta">All shipments</div>
+            </div>
 
-<div class="summary">
-    <div class="card">
-        <strong>Total</strong>
-        <div th:text="${total}">0</div>
-    </div>
-    <div class="card">
-        <strong>Pending</strong>
-        <div th:text="${pending}">0</div>
-    </div>
-    <div class="card">
-        <strong>Delivered</strong>
-        <div th:text="${delivered}">0</div>
-    </div>
-</div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Pending</span>
+                    <span class="kpi-icon">⏳</span>
+                </div>
+                <div class="kpi-value" th:text="${pending}">0</div>
+                <div class="kpi-meta">Awaiting warehouse dispatch</div>
+            </div>
 
-<h2>Create Delivery</h2>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">In-Transit</span>
+                    <span class="kpi-icon">🚚</span>
+                </div>
+                <div class="kpi-value" th:text="${shipped}">0</div>
+                <div class="kpi-meta">On route to customer</div>
+            </div>
 
-<form th:action="@{/deliveries}" th:object="${delivery}" method="post" class="inline">
-    <input type="text" th:field="*{customerName}" placeholder="Customer Name" required>
-    <input type="text" th:field="*{deliveryAddress}" placeholder="Delivery Address" required>
-    <input type="text" th:field="*{productName}" placeholder="Product Name" required>
-    <input type="number" th:field="*{deliveryDays}" placeholder="Delivery Days" min="1" required>
-    <button type="submit">Create Delivery</button>
-</form>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Delivered</span>
+                    <span class="kpi-icon">✅</span>
+                </div>
+                <div class="kpi-value" th:text="${delivered}">0</div>
+                <div class="kpi-meta">Fulfilled orders</div>
+            </div>
 
-<h2>Search</h2>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">SLA Compliance</span>
+                    <span class="kpi-icon">🎯</span>
+                </div>
+                <div class="kpi-value">
+                    <span th:text="${slaRate}">100.0</span>%
+                </div>
+                <div class="kpi-meta">On-time delivery performance</div>
+            </div>
+        </div>
 
-<form th:action="@{/deliveries}" method="get" class="inline">
-    <input type="text" name="keyword" th:value="${keyword}" placeholder="Customer or product">
-    <button type="submit">Search</button>
-    <a href="/deliveries">Clear</a>
-</form>
+        <!-- Create Delivery Card (Contains the FIRST button[type='submit'] to maintain Selenium test compatibility) -->
+        <div class="card" style="margin-bottom: 28px;">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>➕</span> Create New Delivery Order
+                </div>
+                <div id="livePromiseBadge" class="hero-tag" style="margin: 0;">
+                    Live SLA: <span id="previewPromisedText" style="margin-left: 4px;">Calculating...</span>
+                </div>
+            </div>
 
-<h2>Delivery Records</h2>
+            <form th:action="@{/deliveries}" th:object="${delivery}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="customerName">Customer Name *</label>
+                        <input type="text" id="customerName" th:field="*{customerName}" list="customerOptions" placeholder="e.g. Rohan Deshmukh" required>
+                    </div>
 
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Customer</th>
-        <th>Address</th>
-        <th>Product</th>
-        <th>Delivery Days</th>
-        <th>Promised Date</th>
-        <th>Status</th>
-        <th th:if="${canUpdateStatus}">Update Status</th>
-        <th th:unless="${canUpdateStatus}">Action</th>
-    </tr>
-    </thead>
+                    <div class="form-group">
+                        <label class="form-label" for="deliveryAddress">Delivery Address *</label>
+                        <input type="text" id="deliveryAddress" th:field="*{deliveryAddress}" list="addressOptions" placeholder="e.g. Flat 402, Rohan Viti, Baner Road, Pune 411045" required>
+                    </div>
 
-    <tbody>
-    <tr th:each="delivery : ${deliveries}">
-        <td th:text="${delivery.id}">1</td>
-        <td th:text="${delivery.customerName}">Customer</td>
-        <td th:text="${delivery.deliveryAddress}">Address</td>
-        <td th:text="${delivery.productName}">Product</td>
-        <td th:text="${delivery.deliveryDays}">5</td>
-        <td th:text="${delivery.promisedDate}">2026-10-11</td>
-        <td th:text="${delivery.status}">PENDING</td>
+                    <div class="form-group">
+                        <label class="form-label" for="productName">Product Name *</label>
+                        <input type="text" id="productName" th:field="*{productName}" list="productOptions" placeholder="e.g. Apple MacBook Pro 16&quot; M3 Max" required>
+                    </div>
 
-        <td th:if="${canUpdateStatus}">
-            <form th:action="@{'/deliveries/' + ${delivery.id} + '/status'}" method="post">
-                <select name="status">
-                    <option value="PENDING">PENDING</option>
-                    <option value="PROCESSING">PROCESSING</option>
-                    <option value="SHIPPED">SHIPPED</option>
-                    <option value="DELIVERED">DELIVERED</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                </select>
-                <button type="submit">Update</button>
+                    <div class="form-group">
+                        <label class="form-label" for="shippingTier">Shipping Speed Tier</label>
+                        <select id="shippingTier" th:field="*{shippingTier}" onchange="updateLivePreview()">
+                            <option value="STANDARD" selected>Standard Logistics (Base Days)</option>
+                            <option value="EXPRESS">Express Priority (1-2 Days)</option>
+                            <option value="SAME_DAY">Same-Day Rush (0 Days)</option>
+                            <option value="ECONOMY">Economy Surface (+2 Days)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="deliveryDays">Transit Days (Min 1) *</label>
+                        <input type="number" id="deliveryDays" th:field="*{deliveryDays}" min="1" value="3" placeholder="Days" required oninput="updateLivePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" style="width: 100%; height: 42px;">
+                            <span>📦</span> Create Delivery
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Demo Presets Bar for Live Presentation -->
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color); align-items: center;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Demo Presets:</span>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 10px;"
+                            onclick="fillDemoPreset('Rohan Deshmukh', 'Flat 402, Rohan Viti, Baner Road, Pune, Maharashtra 411045', 'Apple MacBook Pro 16&quot; M3 Max (36GB RAM, 1TB SSD)', 'EXPRESS', 2)">
+                        ⚡ MacBook Pro (Pune)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 10px;"
+                            onclick="fillDemoPreset('Pooja Sharma', 'B-12, Godrej Woods, Sector 43, Noida, Uttar Pradesh 201303', 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones', 'STANDARD', 3)">
+                        ⚡ Sony Headphones (Noida)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 10px;"
+                            onclick="fillDemoPreset('Aditya Verma', '204, Silver Oak Heights, Civil Lines, Nagpur, Maharashtra 440001', 'Apple iPhone 15 Pro Max 256GB Natural Titanium', 'SAME_DAY', 1)">
+                        ⚡ iPhone 15 Pro (Nagpur)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 10px;"
+                            onclick="fillDemoPreset('Ananya Iyer', '14/B, 3rd Cross, Indiranagar 1st Stage, Bengaluru, Karnataka 560038', 'Samsung 65&quot; Crystal 4K UHD Smart TV (2024 Model)', 'STANDARD', 4)">
+                        ⚡ 65&quot; Smart TV (Bengaluru)
+                    </button>
+                </div>
+
+                <!-- Datalists for Autocomplete -->
+                <datalist id="customerOptions">
+                    <option value="Rohan Deshmukh">
+                    <option value="Pooja Sharma">
+                    <option value="Ananya Iyer">
+                    <option value="Aditya Verma">
+                    <option value="Meera Nair">
+                    <option value="Karan Malhotra">
+                    <option value="Sneha Patel">
+                    <option value="Vikramaditya Rao">
+                    <option value="Tanya Sengupta">
+                    <option value="Rahul Kulkarni">
+                </datalist>
+
+                <datalist id="addressOptions">
+                    <option value="Flat 402, Rohan Viti, Baner Road, Pune, Maharashtra 411045">
+                    <option value="B-12, Godrej Woods, Sector 43, Noida, Uttar Pradesh 201303">
+                    <option value="14/B, 3rd Cross, Indiranagar 1st Stage, Bengaluru, Karnataka 560038">
+                    <option value="204, Silver Oak Heights, Civil Lines, Nagpur, Maharashtra 440001">
+                    <option value="Villa 7, Skyline Riveria, Marine Drive, Kochi, Kerala 682031">
+                    <option value="C-302, DLF Phase 5, Golf Course Road, Gurugram, Haryana 122002">
+                    <option value="A-501, Iscon Platinum, Bopal-Ambli Road, Ahmedabad, Gujarat 380058">
+                    <option value="Plot 48, Jubilee Hills Road No. 36, Hyderabad, Telangana 500033">
+                    <option value="82/1A, Ballygunge Circular Road, Kolkata, West Bengal 700019">
+                    <option value="1102, Lodha Bellissimo, NM Joshi Marg, Lower Parel, Mumbai 400013">
+                </datalist>
+
+                <datalist id="productOptions">
+                    <option value="Apple MacBook Pro 16&quot; M3 Max (36GB RAM, 1TB SSD)">
+                    <option value="Apple iPhone 15 Pro Max 256GB Natural Titanium">
+                    <option value="Sony WH-1000XM5 Wireless Noise Cancelling Headphones">
+                    <option value="Samsung 65&quot; Crystal 4K UHD Smart TV (2024 Model)">
+                    <option value="Dyson V12 Detect Slim Cordless Vacuum Cleaner">
+                    <option value="Sony PlayStation 5 Slim Digital Edition (1TB SSD)">
+                    <option value="LG 9 Kg AI Direct Drive Front Load Washing Machine">
+                    <option value="Bose QuietComfort 45 Bluetooth Headphones">
+                    <option value="Kindle Paperwhite Signature Edition (32GB)">
+                    <option value="Philips HD9252 Digital Air Fryer (4.1 Liter)">
+                </datalist>
             </form>
-        </td>
+        </div>
 
-        <td th:unless="${canUpdateStatus}">
-            <form th:if="${delivery.status != 'CANCELLED' and delivery.status != 'DELIVERED'}"
-                  th:action="@{'/deliveries/' + ${delivery.id} + '/cancel'}"
-                  method="post" style="display:inline;">
-                <button type="submit" style="background-color: #d9534f; color: white; border: 1px solid #d43f3a; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Cancel</button>
+        <!-- Filter Chips & Search Toolbar -->
+        <div class="action-row">
+            <!-- Filter Chips -->
+            <div class="filter-bar">
+                <a th:href="@{/deliveries(status='ALL')}" class="filter-chip" th:classappend="${selectedStatus == 'ALL'} ? 'active' : ''">All</a>
+                <a th:href="@{/deliveries(status='PENDING')}" class="filter-chip" th:classappend="${selectedStatus == 'PENDING'} ? 'active' : ''">Pending</a>
+                <a th:href="@{/deliveries(status='PROCESSING')}" class="filter-chip" th:classappend="${selectedStatus == 'PROCESSING'} ? 'active' : ''">Processing</a>
+                <a th:href="@{/deliveries(status='SHIPPED')}" class="filter-chip" th:classappend="${selectedStatus == 'SHIPPED'} ? 'active' : ''">In-Transit</a>
+                <a th:href="@{/deliveries(status='DELIVERED')}" class="filter-chip" th:classappend="${selectedStatus == 'DELIVERED'} ? 'active' : ''">Delivered</a>
+                <a th:href="@{/deliveries(status='CANCELLED')}" class="filter-chip" th:classappend="${selectedStatus == 'CANCELLED'} ? 'active' : ''">Cancelled</a>
+            </div>
+
+            <!-- Search Form -->
+            <form th:action="@{/deliveries}" method="get" style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Search customer, product, tracking..." style="width: 250px;">
+                <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+                <a href="/deliveries" class="btn btn-secondary btn-sm" th:if="${keyword != null and !keyword.isEmpty()}">Clear</a>
             </form>
-            <span th:if="${delivery.status == 'CANCELLED'}" class="view-only" style="color: #888;">Cancelled</span>
-            <span th:if="${delivery.status == 'DELIVERED'}" class="view-only" style="color: #28a745;">Completed</span>
-        </td>
-    </tr>
+        </div>
 
-    <tr th:if="${#lists.isEmpty(deliveries)}">
-        <td colspan="9">No delivery records found.</td>
-    </tr>
-    </tbody>
-</table>
+        <!-- Delivery Records Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tracking</th>
+                    <th>Customer</th>
+                    <th>Address</th>
+                    <th>Product</th>
+                    <th>Tier</th>
+                    <th>Days</th>
+                    <th>Promised Date</th>
+                    <th>Status</th>
+                    <th th:if="${canUpdateStatus}">Update Status</th>
+                    <th th:unless="${canUpdateStatus}">Action</th>
+                </tr>
+                </thead>
 
+                <tbody>
+                <tr th:each="delivery : ${deliveries}">
+                    <td th:text="${delivery.id}" style="font-weight: 700;">1</td>
+
+                    <td>
+                        <a th:href="@{'/track/' + ${delivery.trackingNumber}}" class="tracking-chip" title="Track Parcel">
+                            <span th:text="${delivery.trackingNumber != null ? delivery.trackingNumber : 'TRK-' + delivery.id}">TRK-001</span>
+                            <span style="font-size: 11px;">🔍</span>
+                        </a>
+                    </td>
+
+                    <td th:text="${delivery.customerName}" style="font-weight: 600;">Customer</td>
+                    <td th:text="${delivery.deliveryAddress}" style="color: var(--text-secondary);">Address</td>
+                    <td th:text="${delivery.productName}">Product</td>
+
+                    <td>
+                        <span class="role-pill"
+                              th:classappend="${delivery.shippingTier == 'EXPRESS' || delivery.shippingTier == 'SAME_DAY'} ? 'admin' : 'operations'"
+                              th:text="${delivery.shippingTier != null ? delivery.shippingTier : 'STANDARD'}">
+                            STANDARD
+                        </span>
+                    </td>
+
+                    <td th:text="${delivery.deliveryDays}">3</td>
+                    <td th:text="${delivery.promisedDate}" style="font-weight: 600;">2026-10-25</td>
+
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${delivery.status == 'PENDING'} ? 'pending' : (${delivery.status == 'PROCESSING'} ? 'processing' : (${delivery.status == 'SHIPPED'} ? 'shipped' : (${delivery.status == 'DELIVERED'} ? 'delivered' : 'cancelled')))">
+                            <span class="status-dot"></span>
+                            <span th:text="${delivery.status}">PENDING</span>
+                        </span>
+                    </td>
+
+                    <!-- Admin / Operations: Status Update Select Form -->
+                    <td th:if="${canUpdateStatus}">
+                        <form th:action="@{'/deliveries/' + ${delivery.id} + '/status'}" method="post" style="display: flex; gap: 6px; align-items: center;">
+                            <select name="status" style="padding: 4px 8px; font-size: 12px; width: auto;">
+                                <option value="PENDING" th:selected="${delivery.status == 'PENDING'}">PENDING</option>
+                                <option value="PROCESSING" th:selected="${delivery.status == 'PROCESSING'}">PROCESSING</option>
+                                <option value="SHIPPED" th:selected="${delivery.status == 'SHIPPED'}">SHIPPED</option>
+                                <option value="DELIVERED" th:selected="${delivery.status == 'DELIVERED'}">DELIVERED</option>
+                                <option value="CANCELLED" th:selected="${delivery.status == 'CANCELLED'}">CANCELLED</option>
+                            </select>
+                            <button type="submit" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 12px;">Update</button>
+                        </form>
+                    </td>
+
+                    <!-- Customer: Cancel Button (if pending/processing) -->
+                    <td th:unless="${canUpdateStatus}">
+                        <form th:if="${delivery.status != 'CANCELLED' and delivery.status != 'DELIVERED'}"
+                              th:action="@{'/deliveries/' + ${delivery.id} + '/cancel'}"
+                              method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 4px 10px; font-size: 12px;">Cancel</button>
+                        </form>
+                        <span th:if="${delivery.status == 'CANCELLED'}" class="status-badge cancelled" style="font-size: 11px;">Cancelled</span>
+                        <span th:if="${delivery.status == 'DELIVERED'}" class="status-badge delivered" style="font-size: 11px;">Completed</span>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(deliveries)}">
+                    <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
+                        <div style="font-size: 1rem; font-weight: 600;">No delivery records found.</div>
+                        <div style="font-size: 0.85rem; margin-top: 4px;">Try searching for a different keyword or create a new delivery order above.</div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function fillDemoPreset(name, address, product, tier, days) {
+            document.getElementById('customerName').value = name;
+            document.getElementById('deliveryAddress').value = address;
+            document.getElementById('productName').value = product;
+            document.getElementById('shippingTier').value = tier;
+            document.getElementById('deliveryDays').value = days;
+            updateLivePreview();
+        }
+
+        function updateLivePreview() {
+            const daysInput = document.getElementById('deliveryDays');
+            let days = parseInt(daysInput.value, 10);
+            if (isNaN(days) || days < 1) days = 1;
+
+            const tier = document.getElementById('shippingTier').value;
+            let finalDays = days;
+            if (tier === 'SAME_DAY') finalDays = 0;
+            else if (tier === 'EXPRESS') finalDays = Math.max(1, Math.min(days, 2));
+            else if (tier === 'ECONOMY') finalDays = days + 2;
+
+            const target = new Date();
+            target.setDate(target.getDate() + finalDays);
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            document.getElementById('previewPromisedText').innerText = target.toLocaleDateString('en-US', options) + ' (' + finalDays + 'd)';
+        }
+        updateLivePreview();
+    </script>
 </body>
 </html>

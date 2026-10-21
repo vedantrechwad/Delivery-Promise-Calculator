@@ -1,24 +1,227 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Promise Calculator</title>
+    <title>Delivery Promise Calculator - Enterprise Logistics Platform</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <h1>Delivery Promise Calculator</h1>
+    <div th:replace="~{fragments/navbar :: navbar('home')}"></div>
 
-    <p>Spring Boot application is running successfully.</p>
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-tag">
+                <span>⚡</span> Automated Logistics Platform
+            </div>
+            <h1 class="hero-title">
+                Delivery Promise <span class="gradient-text">Calculator & SLA Engine</span>
+            </h1>
+            <p class="hero-desc">
+                High-performance logistics management platform providing automated delivery promise calculations, 
+                dynamic SLA tier routing, and live parcel journey tracking.
+            </p>
 
-    <h2>System Status</h2>
-    <ul>
-        <li>Backend: Spring Boot</li>
-        <li>Database: SQLite</li>
-        <li>Server Port: 8765</li>
-    </ul>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="/deliveries" class="btn btn-primary" style="font-size: 1rem; padding: 12px 24px;">
+                    <span>📋</span> Open Delivery Management
+                </a>
+                <a href="/dashboard" class="btn btn-secondary" style="font-size: 1rem; padding: 12px 24px;">
+                    <span>📊</span> View Analytics Dashboard
+                </a>
+                <a href="/track" class="btn btn-secondary" style="font-size: 1rem; padding: 12px 24px;">
+                    <span>🔍</span> Track a Package
+                </a>
+            </div>
+        </section>
 
-    <p>
-        <a href="/deliveries">Open Delivery Management</a>
-    </p>
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Total Shipments</span>
+                    <span class="kpi-icon">📦</span>
+                </div>
+                <div class="kpi-value" th:text="${total}">0</div>
+                <div class="kpi-meta">All-time processed deliveries</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Active Orders</span>
+                    <span class="kpi-icon">⏳</span>
+                </div>
+                <div class="kpi-value" th:text="${pending}">0</div>
+                <div class="kpi-meta">Currently pending or in transit</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Delivered</span>
+                    <span class="kpi-icon">✅</span>
+                </div>
+                <div class="kpi-value" th:text="${delivered}">0</div>
+                <div class="kpi-meta">Successfully delivered orders</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">On-Time SLA</span>
+                    <span class="kpi-icon">🎯</span>
+                </div>
+                <div class="kpi-value">
+                    <span th:text="${slaRate}">100.0</span>%
+                </div>
+                <div class="kpi-meta">Guaranteed fulfillment accuracy</div>
+            </div>
+        </div>
+
+        <!-- Interactive Promise Date Calculator Simulator Widget -->
+        <div class="calc-simulator">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h2 style="font-size: 1.4rem; font-weight: 800;">⚡ Interactive Promise Calculator Simulator</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Test how promised delivery dates and SLA ratings dynamically adapt to tiers and business days</p>
+                </div>
+                <span class="hero-tag" style="margin: 0;">Live Simulation</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label class="form-label">Shipping Speed Tier</label>
+                    <select id="simTier" onchange="runSim()">
+                        <option value="SAME_DAY">⚡ Same-Day Rush (0 business days)</option>
+                        <option value="EXPRESS">🚀 Express Priority (1-2 business days)</option>
+                        <option value="STANDARD" selected>📦 Standard Delivery (Base transit days)</option>
+                        <option value="ECONOMY">🌿 Eco Surface Saver (+2 buffer days)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Transit Base Days: <span id="daysVal" style="font-weight: 800; color: var(--primary);">3</span></label>
+                    <input type="range" id="simDays" min="1" max="14" value="3" oninput="document.getElementById('daysVal').innerText = this.value; runSim();">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Routing Destination Hub</label>
+                    <select id="simZone" onchange="runSim()">
+                        <option value="Metro">Local Hub / Metro (Fastest)</option>
+                        <option value="Regional">Regional Tier-2 City (+1 day)</option>
+                        <option value="Outstation">Outstation / Remote (+2 days)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Calculated Output Preview Box -->
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Promised Delivery Date</div>
+                    <div id="simDate" style="font-size: 1.6rem; font-weight: 800; color: var(--primary);">Calculating...</div>
+                    <div id="simDesc" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">Expected on-time delivery</div>
+                </div>
+
+                <div style="text-align: right;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">SLA Confidence</div>
+                    <div id="simConfidence" style="font-size: 1.4rem; font-weight: 800; color: var(--status-delivered);">99.4% Low Risk</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Based on logistics queue & transit capacity</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Architecture & DevOps Toolchain Cards -->
+        <div style="margin: 40px 0;">
+            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 18px;">🛠️ DevOps & Enterprise Toolchain</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+                <div class="card">
+                    <div class="card-title"><span>☕</span> Spring Boot & Java 21</div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                        Enterprise Spring Boot 4 backend running on embedded Tomcat. RESTful controllers, JPA/Hibernate persistence, and Thymeleaf server templates.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span>💾</span> SQLite Embedded DB</div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                        Zero-configuration relational database persistence in <code>delivery_promise.db</code> with auto DDL schema migration.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span>🐳</span> Docker Containerization</div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                        Packaged into <code>delivery-promise-calculator:1.0</code> via Eclipse Temurin 21 JRE, exposing port 8765/8766.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span>⚙️</span> Jenkins CI/CD Automation</div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                        Automated build, test verification, Docker build, and continuous deployment pipeline scripted in <code>Jenkinsfile</code>.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span>🧪</span> Selenium WebDriver</div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                        End-to-end automated UI regression testing verifying page loading, delivery record creation, and real-time search.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><span>📜</span> Puppet Configuration</div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                        Automated provisioning and drift remediation managing application configuration manifests in <code>delivery_promise.pp</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Showcase Banner -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin: 30px 0;">
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Academic Project Evaluation</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Vedant Rechwad • Roll No: 23102A0054</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Comprehensive 15-Task DevOps Implementation & Release</div>
+            </div>
+            <a href="/deliveries" class="btn btn-primary">
+                <span>📋</span> Launch Delivery Hub
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function runSim() {
+            const tier = document.getElementById('simTier').value;
+            let days = parseInt(document.getElementById('simDays').value, 10);
+            const zone = document.getElementById('simZone').value;
+
+            if (zone === 'Regional') days += 1;
+            if (zone === 'Outstation') days += 2;
+
+            let finalDays = days;
+            if (tier === 'SAME_DAY') finalDays = 0;
+            else if (tier === 'EXPRESS') finalDays = Math.max(1, Math.min(days, 2));
+            else if (tier === 'ECONOMY') finalDays = days + 2;
+
+            const target = new Date();
+            target.setDate(target.getDate() + finalDays);
+
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('simDate').innerText = target.toLocaleDateString('en-US', options) + ' (' + finalDays + ' days)';
+
+            if (finalDays <= 1) {
+                document.getElementById('simConfidence').innerText = '99.8% Priority Fast Track';
+                document.getElementById('simConfidence').style.color = '#059669';
+            } else if (finalDays <= 4) {
+                document.getElementById('simConfidence').innerText = '98.5% Standard SLA';
+                document.getElementById('simConfidence').style.color = '#2563eb';
+            } else {
+                document.getElementById('simConfidence').innerText = '94.2% Surface Cargo';
+                document.getElementById('simConfidence').style.color = '#d97706';
+            }
+        }
+        runSim();
+    </script>
 </body>
 </html>

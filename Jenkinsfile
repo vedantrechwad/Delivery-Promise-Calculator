@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        HEADLESS = 'true'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -11,7 +15,13 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                bat '"C:\\DevTools\\apache-maven-3.9.16\\bin\\mvn.cmd" clean package -DskipTests'
+                bat '''
+                if exist "C:\\DevTools\\apache-maven-3.9.16\\bin\\mvn.cmd" (
+                    "C:\\DevTools\\apache-maven-3.9.16\\bin\\mvn.cmd" clean test package
+                ) else (
+                    call .\\mvnw.cmd clean test package
+                )
+                '''
             }
         }
 
@@ -43,7 +53,7 @@ pipeline {
             steps {
                 bat '''
                 docker ps --filter "name=delivery-promise-app"
-                echo Docker deployment completed successfully.
+                echo Docker deployment completed successfully on port 8766.
                 '''
             }
         }

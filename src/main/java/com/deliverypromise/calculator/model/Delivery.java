@@ -35,6 +35,24 @@ public class Delivery {
     @Column(nullable = false)
     private String status;
 
+    @Column
+    private String trackingNumber;
+
+    @Column
+    private String shippingTier = "STANDARD";
+
+    @Column
+    private String priority = "NORMAL";
+
+    @Column
+    private LocalDate orderDate = LocalDate.now();
+
+    @Column
+    private LocalDate deliveredDate;
+
+    @Column
+    private String notes;
+
     public Delivery() {
     }
 
@@ -89,4 +107,58 @@ public class Delivery {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getTrackingNumber() {
+        if (trackingNumber == null || trackingNumber.isBlank()) {
+            if (id != null) {
+                return "TRK-" + String.format("%04d", id);
+            }
+        }
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public String getShippingTier() {
+        return shippingTier;
+    }
+
+    public void setShippingTier(String shippingTier) {
+        this.shippingTier = shippingTier;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public LocalDate getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(LocalDate orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public LocalDate getDeliveredDate() {
+        return deliveredDate;
+    }
+
+    public void setDeliveredDate(LocalDate deliveredDate) {
+        this.deliveredDate = deliveredDate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }
+

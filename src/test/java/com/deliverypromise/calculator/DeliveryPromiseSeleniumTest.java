@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -20,11 +21,20 @@ class DeliveryPromiseSeleniumTest {
 
     @BeforeAll
     static void setUp() {
-        // Selenium Manager automatically locates/downloads the compatible ChromeDriver.
-        driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        String headless = System.getProperty("headless", "false");
+        if ("true".equalsIgnoreCase(headless) || System.getenv("JENKINS_HOME") != null || System.getenv("CI") != null) {
+            options.addArguments("--headless=new");
+        }
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--remote-allow-origins=*");
+
+        driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
+
 
     @Test
     void deliveryManagementPageLoads() {

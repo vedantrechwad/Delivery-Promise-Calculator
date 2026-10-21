@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - PromiseFlow Delivery Calculator</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .login-wrap {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+        .login-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
+        }
+        .role-tabs {
+            display: flex;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 14px;
+        }
+        .role-tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 6px;
+            background: transparent;
+            border: none;
+            border-radius: calc(var(--radius-sm) - 2px);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .role-tab:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .role-tab.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        .flash-autofill {
+            border-color: var(--primary) !important;
+            background-color: var(--primary-light) !important;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.35) !important;
+            transition: all 0.25s ease;
+        }
+        .quick-role-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .quick-role-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar('login')}"></div>
+
+    <div class="login-wrap">
+        <div class="login-card">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 2.2rem; margin-bottom: 6px;">🔐</div>
+                <h1 style="font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em;">Account Sign In</h1>
+                <p style="color: var(--text-secondary); font-size: 0.88rem;">Enter credentials or select a demonstration role</p>
+            </div>
+
+            <!-- Alerts -->
+            <div th:if="${error != null}" class="alert alert-error">
+                <span>⚠️</span> <span th:text="${error}">Invalid credentials</span>
+            </div>
+            <div th:if="${logout != null}" class="alert alert-success">
+                <span>✓</span> <span>You have been signed out successfully.</span>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.04em;">
+                    Switch Demo Persona:
+                </div>
+                <div class="role-tabs">
+                    <button type="button" class="role-tab" id="tab-admin" onclick="selectDemoRole('admin', true)">
+                        <span>🛡️</span> Admin
+                    </button>
+                    <button type="button" class="role-tab" id="tab-operator" onclick="selectDemoRole('operator', true)">
+                        <span>🚚</span> Operations
+                    </button>
+                    <button type="button" class="role-tab" id="tab-customer" onclick="selectDemoRole('customer', true)">
+                        <span>👤</span> Customer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sign In Form -->
+            <form th:action="@{/login}" method="post">
+                <input type="hidden" name="redirect" th:value="${redirect != null ? redirect : '/deliveries'}">
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" list="demoUsersList"
+                           placeholder="Enter username"
+                           onclick="autoFillActiveCredentials()"
+                           onfocus="autoFillActiveCredentials()"
+                           oninput="onUsernameChanged(this.value)"
+                           autocomplete="off" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="••••••••"
+                           onclick="autoFillActiveCredentials()"
+                           onfocus="autoFillActiveCredentials()"
+                           autocomplete="off" required>
+                </div>
+
+                <datalist id="demoUsersList">
+                    <option value="admin">Admin Director (admin)</option>
+                    <option value="operator">Operations Lead (operator)</option>
+                    <option value="customer">Retail Customer (customer)</option>
+                </datalist>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-weight: 700; font-size: 0.95rem;">
+                    Sign In
+                </button>
+            </form>
+
+            <div style="margin: 26px 0 16px; border-top: 1px solid var(--border-color); position: relative; text-align: center;">
+                <span style="position: relative; top: -11px; background: var(--bg-card); padding: 0 12px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">
+                    Or 1-Click Instant Login
+                </span>
+            </div>
+
+            <div>
+                <button type="button" class="quick-role-btn" onclick="quickFill('admin', 'admin123')">
+                    <span style="font-size: 1.2rem;">🛡️</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-main);">Admin Director</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">admin / admin123 (Full administrative control)</div>
+                    </div>
+                </button>
+
+                <button type="button" class="quick-role-btn" onclick="quickFill('operator', 'ops123')">
+                    <span style="font-size: 1.2rem;">🚚</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-main);">Operations Lead</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">operator / ops123 (Warehouse status updates)</div>
+                    </div>
+                </button>
+
+                <button type="button" class="quick-role-btn" onclick="quickFill('customer', 'customer123')">
+                    <span style="font-size: 1.2rem;">👤</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-main);">Retail Customer</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">customer / customer123 (Self-service & Cancel)</div>
+                    </div>
+                </button>
+            </div>
+
+            <div style="margin-top: 22px; text-align: center; font-size: 0.78rem; color: var(--text-muted);">
+                DevOps Project By <strong>Vedant Rechwad</strong> (Roll No: 23102A0054)
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const ROLE_DATA = {
+            admin: {
+                username: 'admin',
+                password: 'admin123',
+                title: 'Admin Director Access',
+                icon: '🛡️'
+            },
+            operator: {
+                username: 'operator',
+                password: 'ops123',
+                title: 'Operations Lead Access',
+                icon: '🚚'
+            },
+            customer: {
+                username: 'customer',
+                password: 'customer123',
+                title: 'Retail Customer Access',
+                icon: '👤'
+            }
+        };
+
+        /*<![CDATA[*/
+        let serverTargetRole = /*[[${targetRole}]]*/ '';
+        /*]]>*/
+
+        let currentRole = (serverTargetRole || '').toLowerCase();
+        if (!ROLE_DATA[currentRole]) {
+            currentRole = 'admin';
+        }
+
+        function selectDemoRole(roleKey, fillNow) {
+            if (!ROLE_DATA[roleKey]) roleKey = 'admin';
+            currentRole = roleKey;
+
+            ['admin', 'operator', 'customer'].forEach(r => {
+                const tab = document.getElementById('tab-' + r);
+                if (tab) {
+                    if (r === roleKey) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                }
+            });
+
+            if (fillNow) {
+                fillInputs(d.username, d.password);
+            }
+        }
+
+        function fillInputs(user, pass) {
+            const uInput = document.getElementById('username');
+            const pInput = document.getElementById('password');
+            uInput.value = user;
+            pInput.value = pass;
+
+            [uInput, pInput].forEach(el => {
+                el.classList.add('flash-autofill');
+                setTimeout(() => el.classList.remove('flash-autofill'), 500);
+            });
+        }
+
+        function autoFillActiveCredentials() {
+            const d = ROLE_DATA[currentRole] || ROLE_DATA.admin;
+            fillInputs(d.username, d.password);
+        }
+
+        function onUsernameChanged(val) {
+            const v = (val || '').trim().toLowerCase();
+            if (ROLE_DATA[v]) {
+                selectDemoRole(v, false);
+                document.getElementById('password').value = ROLE_DATA[v].password;
+            }
+        }
+
+        function quickFill(user, pass) {
+            fillInputs(user, pass);
+            document.querySelector('form').submit();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlRole = urlParams.get('role');
+            if (urlRole && ROLE_DATA[urlRole.toLowerCase()]) {
+                selectDemoRole(urlRole.toLowerCase(), false);
+            } else {
+                selectDemoRole(currentRole, false);
+            }
+        });
+    </script>
+</body>
+</html>

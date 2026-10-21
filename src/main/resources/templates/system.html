@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps System Telemetry - PromiseFlow</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .pipeline-stage {
+            flex: 1;
+            min-width: 150px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            position: relative;
+        }
+        .pipeline-stage.success {
+            border-top: 4px solid var(--status-delivered);
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar('system')}"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+            <div>
+                <span class="hero-tag"><span>⚡</span> Telemetry & Infrastructure</span>
+                <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">DevOps System Telemetry</h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">Real-time JVM metrics, SQLite database telemetry, Docker container health, and Jenkins CI/CD pipeline status</p>
+            </div>
+            <a href="/" class="btn btn-secondary">
+                <span>←</span> Home Portal
+            </a>
+        </div>
+
+        <!-- Project Credentials Banner -->
+        <div style="background: var(--primary-gradient); color: white; border-radius: var(--radius-md); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--shadow-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9;">DevOps Final Release & Viva Showcase</div>
+                <div style="font-size: 1.4rem; font-weight: 800; margin-top: 2px;">Vedant Rechwad • Roll No: 23102A0054</div>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 4px;">Comprehensive 15-Task CI/CD, Containerization, Configuration Management, & Automated Testing</div>
+            </div>
+            <span style="font-size: 2.4rem;">🎓</span>
+        </div>
+
+        <!-- System & Runtime Telemetry Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">JVM Heap Memory</span>
+                    <span class="kpi-icon">🧠</span>
+                </div>
+                <div class="kpi-value"><span th:text="${usedMemory}">0</span> <span style="font-size: 1rem; font-weight: 600;">/ <span th:text="${maxMemory}">0</span> MB</span></div>
+                <div class="kpi-meta"><span th:text="${memPercent}">0</span>% allocated memory used</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Server Uptime</span>
+                    <span class="kpi-icon">⏱️</span>
+                </div>
+                <div class="kpi-value">
+                    <span th:text="${uptimeHours}">0</span>h <span th:text="${uptimeMinutes}">0</span>m
+                </div>
+                <div class="kpi-meta">Continuous execution without drift</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">SQLite Database</span>
+                    <span class="kpi-icon">💾</span>
+                </div>
+                <div class="kpi-value"><span th:text="${totalRecords}">0</span> <span style="font-size: 1rem; font-weight: 600;">rows</span></div>
+                <div class="kpi-meta">DB Size: <span th:text="${dbSizeKb}">0</span> KB (delivery_promise.db)</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Port & Runtime</span>
+                    <span class="kpi-icon">🌐</span>
+                </div>
+                <div class="kpi-value" style="font-size: 1.6rem;">Port <span th:text="${serverPort}">8765</span></div>
+                <div class="kpi-meta">Java <span th:text="${javaVersion}">21</span> • Embedded Tomcat</div>
+            </div>
+        </div>
+
+        <!-- Jenkins CI/CD Pipeline Telemetry -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>⚙️</span> Jenkins Pipeline as Code (Task 8, 10, 12)
+                </div>
+                <span class="status-badge delivered"><span class="status-dot"></span> Pipeline Configured</span>
+            </div>
+
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 18px;">
+                The automated pipeline is defined in <code>Jenkinsfile</code> and executes on commit to the repository.
+            </p>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="pipeline-stage success">
+                    <div style="font-size: 1.3rem;">1️⃣</div>
+                    <div style="font-weight: 700; margin-top: 6px;">Checkout</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Git / GitHub SCM</div>
+                </div>
+
+                <div class="pipeline-stage success">
+                    <div style="font-size: 1.3rem;">2️⃣</div>
+                    <div style="font-weight: 700; margin-top: 6px;">Build & Test</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Maven Package</div>
+                </div>
+
+                <div class="pipeline-stage success">
+                    <div style="font-size: 1.3rem;">3️⃣</div>
+                    <div style="font-weight: 700; margin-top: 6px;">Docker Check</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">CLI & Engine Ping</div>
+                </div>
+
+                <div class="pipeline-stage success">
+                    <div style="font-size: 1.3rem;">4️⃣</div>
+                    <div style="font-weight: 700; margin-top: 6px;">Docker Build</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Tag: 1.0</div>
+                </div>
+
+                <div class="pipeline-stage success">
+                    <div style="font-size: 1.3rem;">5️⃣</div>
+                    <div style="font-weight: 700; margin-top: 6px;">Docker Deploy</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Port 8766:8765</div>
+                </div>
+
+                <div class="pipeline-stage success">
+                    <div style="font-size: 1.3rem;">6️⃣</div>
+                    <div style="font-weight: 700; margin-top: 6px;">Verify</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">HTTP Health Check</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Docker, Puppet & Selenium Telemetry Panels -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <!-- Docker Details -->
+            <div class="card">
+                <div class="card-title" style="margin-bottom: 14px;">
+                    <span>🐳</span> Docker Containerization (Task 11 & 12)
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+                    <div><strong>Image:</strong> <code th:text="${dockerImage}">delivery-promise-calculator:1.0</code></div>
+                    <div><strong>Base Image:</strong> <code>eclipse-temurin:21-jre</code></div>
+                    <div><strong>Host Mapping:</strong> <code>8766:8765</code></div>
+                    <div><strong>Container Name:</strong> <code>delivery-promise-app</code></div>
+                    <div><strong>Status:</strong> <span class="status-badge delivered" style="font-size: 0.75rem;"><span class="status-dot"></span> Containerized</span></div>
+                </div>
+            </div>
+
+            <!-- Puppet Details -->
+            <div class="card">
+                <div class="card-title" style="margin-bottom: 14px;">
+                    <span>📜</span> Puppet Configuration (Task 13 & 14)
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+                    <div><strong>Manifest:</strong> <code th:text="${puppetManifest}">puppet/delivery_promise.pp</code></div>
+                    <div><strong>Managed File:</strong> <code>C:\DeliveryPromise\config\application.properties</code></div>
+                    <div><strong>Properties:</strong> <code>server.port=8765</code></div>
+                    <div><strong>Drift Remediation:</strong> Automatic recovery of missing config</div>
+                    <div><strong>Idempotency:</strong> Verified with multiple applies</div>
+                </div>
+            </div>
+
+            <!-- Selenium Testing Details -->
+            <div class="card">
+                <div class="card-title" style="margin-bottom: 14px;">
+                    <span>🧪</span> Selenium WebDriver (Task 9 & 10)
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+                    <div><strong>Test Suite:</strong> <code th:text="${seleniumSuite}">DeliveryPromiseSeleniumTest</code></div>
+                    <div><strong>Browser Engine:</strong> Google Chrome / Selenium Manager</div>
+                    <div><strong>Headless Mode:</strong> Enabled for CI environments</div>
+                    <div><strong>CLI Command:</strong> <code>mvn -Dtest=DeliveryPromiseSeleniumTest test</code></div>
+                    <div><strong>Functional Coverage:</strong> Page loads, creation, status, search</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
