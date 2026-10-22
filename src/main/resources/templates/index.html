@@ -91,10 +91,10 @@
                 <div class="form-group">
                     <label class="form-label">Shipping Speed Tier</label>
                     <select id="simTier" onchange="runSim()">
-                        <option value="SAME_DAY">⚡ Same-Day Rush (0 business days)</option>
-                        <option value="EXPRESS">🚀 Express Priority (1-2 business days)</option>
-                        <option value="STANDARD" selected>📦 Standard Delivery (Base transit days)</option>
-                        <option value="ECONOMY">🌿 Eco Surface Saver (+2 buffer days)</option>
+                        <option value="STANDARD" selected>Standard</option>
+                        <option value="EXPRESS">Express</option>
+                        <option value="SAME_DAY">Same Day</option>
+                        <option value="ECONOMY">Economy</option>
                     </select>
                 </div>
 
@@ -129,65 +129,7 @@
             </div>
         </div>
 
-        <!-- System Architecture & DevOps Toolchain Cards -->
-        <div style="margin: 40px 0;">
-            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 18px;">🛠️ DevOps & Enterprise Toolchain</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
-                <div class="card">
-                    <div class="card-title"><span>☕</span> Spring Boot & Java 21</div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                        Enterprise Spring Boot 4 backend running on embedded Tomcat. RESTful controllers, JPA/Hibernate persistence, and Thymeleaf server templates.
-                    </p>
-                </div>
 
-                <div class="card">
-                    <div class="card-title"><span>💾</span> SQLite Embedded DB</div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                        Zero-configuration relational database persistence in <code>delivery_promise.db</code> with auto DDL schema migration.
-                    </p>
-                </div>
-
-                <div class="card">
-                    <div class="card-title"><span>🐳</span> Docker Containerization</div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                        Packaged into <code>delivery-promise-calculator:1.0</code> via Eclipse Temurin 21 JRE, exposing port 8765/8766.
-                    </p>
-                </div>
-
-                <div class="card">
-                    <div class="card-title"><span>⚙️</span> Jenkins CI/CD Automation</div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                        Automated build, test verification, Docker build, and continuous deployment pipeline scripted in <code>Jenkinsfile</code>.
-                    </p>
-                </div>
-
-                <div class="card">
-                    <div class="card-title"><span>🧪</span> Selenium WebDriver</div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                        End-to-end automated UI regression testing verifying page loading, delivery record creation, and real-time search.
-                    </p>
-                </div>
-
-                <div class="card">
-                    <div class="card-title"><span>📜</span> Puppet Configuration</div>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                        Automated provisioning and drift remediation managing application configuration manifests in <code>delivery_promise.pp</code>.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Student Showcase Banner -->
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin: 30px 0;">
-            <div>
-                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Academic Project Evaluation</div>
-                <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Vedant Rechwad • Roll No: 23102A0054</div>
-                <div style="font-size: 0.85rem; color: var(--text-secondary);">Comprehensive 15-Task DevOps Implementation & Release</div>
-            </div>
-            <a href="/deliveries" class="btn btn-primary">
-                <span>📋</span> Launch Delivery Hub
-            </a>
-        </div>
     </div>
 
     <script>

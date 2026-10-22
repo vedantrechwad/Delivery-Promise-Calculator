@@ -129,10 +129,10 @@
                     <div class="form-group">
                         <label class="form-label" for="shippingTier">Shipping Speed Tier</label>
                         <select id="shippingTier" th:field="*{shippingTier}" onchange="updateLivePreview()">
-                            <option value="STANDARD" selected>Standard Logistics (Base Days)</option>
-                            <option value="EXPRESS">Express Priority (1-2 Days)</option>
-                            <option value="SAME_DAY">Same-Day Rush (0 Days)</option>
-                            <option value="ECONOMY">Economy Surface (+2 Days)</option>
+                            <option value="STANDARD" selected>Standard</option>
+                            <option value="EXPRESS">Express</option>
+                            <option value="SAME_DAY">Same Day</option>
+                            <option value="ECONOMY">Economy</option>
                         </select>
                     </div>
 
@@ -236,47 +236,64 @@
             <table>
                 <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Tracking</th>
-                    <th>Customer</th>
-                    <th>Address</th>
-                    <th>Product</th>
-                    <th>Tier</th>
-                    <th>Days</th>
-                    <th>Promised Date</th>
-                    <th>Status</th>
-                    <th th:if="${canUpdateStatus}">Update Status</th>
-                    <th th:unless="${canUpdateStatus}">Action</th>
+                    <th style="width: 45px; text-align: center;">ID</th>
+                    <th style="white-space: nowrap; width: 110px;">Tracking</th>
+                    <th style="min-width: 120px; white-space: nowrap;">Customer</th>
+                    <th style="min-width: 150px; max-width: 200px;">Address</th>
+                    <th style="min-width: 150px; max-width: 200px;">Product</th>
+                    <th style="white-space: nowrap; text-align: center; width: 90px;">Tier</th>
+                    <th style="white-space: nowrap; text-align: center; width: 90px;">Transit Time</th>
+                    <th style="white-space: nowrap; width: 110px;">Promised Date</th>
+                    <th style="white-space: nowrap; width: 115px;">Status</th>
+                    <th th:if="${canUpdateStatus}" class="col-action" style="white-space: nowrap; min-width: 190px;">Update Status</th>
+                    <th th:unless="${canUpdateStatus}" class="col-action" style="white-space: nowrap; min-width: 100px;">Action</th>
                 </tr>
                 </thead>
 
                 <tbody>
                 <tr th:each="delivery : ${deliveries}">
-                    <td th:text="${delivery.id}" style="font-weight: 700;">1</td>
+                    <td th:text="${delivery.id}" style="font-weight: 700; text-align: center;">1</td>
 
-                    <td>
+                    <td style="white-space: nowrap;">
                         <a th:href="@{'/track/' + ${delivery.trackingNumber}}" class="tracking-chip" title="Track Parcel">
                             <span th:text="${delivery.trackingNumber != null ? delivery.trackingNumber : 'TRK-' + delivery.id}">TRK-001</span>
                             <span style="font-size: 11px;">🔍</span>
                         </a>
                     </td>
 
-                    <td th:text="${delivery.customerName}" style="font-weight: 600;">Customer</td>
-                    <td th:text="${delivery.deliveryAddress}" style="color: var(--text-secondary);">Address</td>
-                    <td th:text="${delivery.productName}">Product</td>
+                    <td th:text="${delivery.customerName}" style="font-weight: 600; white-space: nowrap;">Customer</td>
 
                     <td>
+                        <div style="max-width: 170px; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
+                             th:title="${delivery.deliveryAddress}"
+                             th:text="${delivery.deliveryAddress}">
+                            Address
+                        </div>
+                    </td>
+
+                    <td>
+                        <div style="max-width: 170px; font-size: 0.85rem; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
+                             th:title="${delivery.productName}"
+                             th:text="${delivery.productName}">
+                            Product
+                        </div>
+                    </td>
+
+                    <td style="text-align: center; white-space: nowrap;">
                         <span class="role-pill"
                               th:classappend="${delivery.shippingTier == 'EXPRESS' || delivery.shippingTier == 'SAME_DAY'} ? 'admin' : 'operations'"
-                              th:text="${delivery.shippingTier != null ? delivery.shippingTier : 'STANDARD'}">
-                            STANDARD
+                              th:text="${delivery.shippingTier == 'SAME_DAY' ? 'Same Day' : (delivery.shippingTier == 'EXPRESS' ? 'Express' : (delivery.shippingTier == 'ECONOMY' ? 'Economy' : 'Standard'))}">
+                            Standard
                         </span>
                     </td>
 
-                    <td th:text="${delivery.deliveryDays}">3</td>
-                    <td th:text="${delivery.promisedDate}" style="font-weight: 600;">2026-10-25</td>
+                    <td style="text-align: center; font-weight: 600; white-space: nowrap;">
+                        <span th:text="${delivery.deliveryDays} + (${delivery.deliveryDays == 1} ? ' day' : ' days')">3 days</span>
+                    </td>
 
-                    <td>
+                    <td th:text="${delivery.promisedDate}" style="font-weight: 600; white-space: nowrap;">2026-10-25</td>
+
+                    <td style="white-space: nowrap;">
                         <span class="status-badge"
                               th:classappend="${delivery.status == 'PENDING'} ? 'pending' : (${delivery.status == 'PROCESSING'} ? 'processing' : (${delivery.status == 'SHIPPED'} ? 'shipped' : (${delivery.status == 'DELIVERED'} ? 'delivered' : 'cancelled')))">
                             <span class="status-dot"></span>
@@ -285,25 +302,25 @@
                     </td>
 
                     <!-- Admin / Operations: Status Update Select Form -->
-                    <td th:if="${canUpdateStatus}">
-                        <form th:action="@{'/deliveries/' + ${delivery.id} + '/status'}" method="post" style="display: flex; gap: 6px; align-items: center;">
-                            <select name="status" style="padding: 4px 8px; font-size: 12px; width: auto;">
+                    <td th:if="${canUpdateStatus}" class="col-action" style="white-space: nowrap;">
+                        <form th:action="@{'/deliveries/' + ${delivery.id} + '/status'}" method="post" style="display: inline-flex; gap: 6px; align-items: center; margin: 0; flex-wrap: nowrap;">
+                            <select name="status" style="padding: 4px 6px; font-size: 11px; width: 96px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 600; cursor: pointer;">
                                 <option value="PENDING" th:selected="${delivery.status == 'PENDING'}">PENDING</option>
                                 <option value="PROCESSING" th:selected="${delivery.status == 'PROCESSING'}">PROCESSING</option>
                                 <option value="SHIPPED" th:selected="${delivery.status == 'SHIPPED'}">SHIPPED</option>
                                 <option value="DELIVERED" th:selected="${delivery.status == 'DELIVERED'}">DELIVERED</option>
                                 <option value="CANCELLED" th:selected="${delivery.status == 'CANCELLED'}">CANCELLED</option>
                             </select>
-                            <button type="submit" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 12px;">Update</button>
+                            <button type="submit" class="btn btn-sm btn-update" style="white-space: nowrap; flex-shrink: 0; height: 28px; padding: 3px 10px; font-size: 11px;">Update</button>
                         </form>
                     </td>
 
                     <!-- Customer: Cancel Button (if pending/processing) -->
-                    <td th:unless="${canUpdateStatus}">
+                    <td th:unless="${canUpdateStatus}" class="col-action" style="white-space: nowrap;">
                         <form th:if="${delivery.status != 'CANCELLED' and delivery.status != 'DELIVERED'}"
                               th:action="@{'/deliveries/' + ${delivery.id} + '/cancel'}"
                               method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 4px 10px; font-size: 12px;">Cancel</button>
+                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 12px; font-size: 12px; font-weight: 600; height: 32px;">Cancel</button>
                         </form>
                         <span th:if="${delivery.status == 'CANCELLED'}" class="status-badge cancelled" style="font-size: 11px;">Cancelled</span>
                         <span th:if="${delivery.status == 'DELIVERED'}" class="status-badge delivered" style="font-size: 11px;">Completed</span>
